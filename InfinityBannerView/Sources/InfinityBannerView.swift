@@ -203,14 +203,16 @@ extension InfinityBannerView: UICollectionViewDataSource {
             let item = banners[indexPath.row]
             cell.configure(String(format: "%@ / row : %d", item, indexPath.row))
             switch indexPath.row {
+            case 0:
+                cell.contentView.backgroundColor = .red
             case 1:
                 cell.contentView.backgroundColor = .blue
             case 2:
                 cell.contentView.backgroundColor = .green
             case 3:
-                cell.contentView.backgroundColor = .gray
+                cell.contentView.backgroundColor = .red
             case 4:
-                cell.contentView.backgroundColor = .brown
+                cell.contentView.backgroundColor = .blue
             default:
                 break
             }
@@ -267,24 +269,40 @@ extension InfinityBannerView: UICollectionViewDelegate {
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         guard self.bannerCount > 1 else { return }
         let maxOffsetX = scrollViewOffsetX(lastIndex: 1)
-        let currentOffsetX = targetContentOffset.pointee.x
+        let targetOffsetX = targetContentOffset.pointee.x
         
-        print("scrollViewWillEndDragging==================")
-        print("maxOffsetX : \(maxOffsetX)")
-        print("currentOffsetX : \(currentOffsetX)")
+//        print("maxOffsetX : \(maxOffsetX)")
+//        print("currentOffsetX : \(targetOffsetX)")
+//        print("velocity : \(velocity)")
         
-        if currentOffsetX >= maxOffsetX {
+        if targetOffsetX >= maxOffsetX {
+            print("scrollViewWillEndDragging==================1")
 //            pageControl.currentPage = 0
+            let width: CGFloat = scrollView.bounds.width
+            let currentOffsetX: CGFloat = maxOffsetX - scrollView.contentOffset.x
+//            print("maxOffsetX : \(maxOffsetX)")
+//            print("scrollView.contentOffset.x : \(scrollView.contentOffset.x)")
+//            print("currentOffsetX : \(currentOffsetX)")
+            
+            
+            let multiplierX: CGFloat = width - (maxOffsetX - scrollView.contentOffset.x)
+            guard multiplierX / width >= 0.5 else {
+                
+                return
+            }
+            print("multiplierX / width >= 0.5 : \(multiplierX / width >= 0.5)")
             DispatchQueue.main.async {
                 self.collectionView.scrollToItem(at: .init(row: 1, section: 0), at: .centeredHorizontally, animated: false)
             }
-        } else if currentOffsetX < 10 {
+        } else if targetOffsetX < 10 {
+            print("scrollViewWillEndDragging==================2")
 //            pageControl.currentPage = bannerCount - 2
             let lastIndex: Int = self.bannerCount - 1
             DispatchQueue.main.async {
                 self.collectionView.scrollToItem(at: .init(row: lastIndex - 1, section: 0), at: .centeredHorizontally, animated: false)
             }
         } else {
+            print("scrollViewWillEndDragging==================3")
             if abs(velocity.x) > abs(velocity.y) {
                 var value: Int = 1
                 if velocity.x < 0 {
@@ -294,6 +312,7 @@ extension InfinityBannerView: UICollectionViewDelegate {
             }
         }
     }
+    
 }
 
 // MARK: - UICollectionViewFlowLayout
